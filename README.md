@@ -1,11 +1,44 @@
 # 👩‍💼 Employee Salary Prediction
 
-A full-stack machine learning web application that predicts employee salary based on age, performance rating, tenure, department, city, and remote-work status.
+A full-stack machine learning web application that predicts employee salary based on age, performance rating, tenure, department, city, and remote-work status. Built as an internship project to demonstrate the complete flow from raw data to a working prediction UI.
 
 - **Backend**: Flask REST API
 - **Frontend**: Streamlit
 - **ML Model**: Linear Regression (scikit-learn), wrapped in a preprocessing pipeline
 - **Dataset**: `data/employee_data.csv` (raw, 308 records) → cleaned to `data/employee_data_cleaned.csv` (285 records) during training
+
+---
+
+## Key Features
+
+- End-to-end data cleaning handled automatically by a single training script
+- Single saved `Pipeline` (preprocessing + model), so predictions use exactly the same steps as training
+- REST API with health check, prediction, dataset and model-info endpoints
+- Interactive Streamlit UI with prediction, data exploration and model evaluation pages
+
+---
+
+## System Architecture
+
+The diagram below shows how the data, model, backend and frontend connect to each other.
+
+```mermaid
+flowchart LR
+    A[("Raw Dataset<br/>employee_data.csv<br/>308 records")] --> B["train_model.py<br/>Clean · Feature engineering · Train"]
+    B --> C[("Cleaned Dataset<br/>employee_data_cleaned.csv<br/>285 records")]
+    B --> D["model.pkl<br/>Pipeline: preprocessing + Linear Regression"]
+    B --> E["diagnostics.png<br/>Evaluation plots"]
+
+    D --> F["Flask REST API<br/>backend/app.py<br/>:5000"]
+    C --> F
+
+    G["Streamlit UI<br/>frontend/ui.py<br/>:8501"] -- "HTTP request (JSON)" --> F
+    F -- "Prediction / data (JSON)" --> G
+
+    H(["User"]) <--> G
+```
+
+**Flow in short:** raw data is cleaned and used to train the model → the trained pipeline is saved as `model.pkl` → Flask loads it and exposes API endpoints → Streamlit calls those endpoints and shows the results to the user.
 
 ---
 
@@ -86,6 +119,8 @@ streamlit run frontend/ui.py
 ```
 UI opens at **http://localhost:8501**
 
+> **Tip:** Always start the Flask backend *before* the Streamlit frontend, since the UI fetches its data from the API.
+
 ---
 
 ## API Endpoints
@@ -137,6 +172,15 @@ UI opens at **http://localhost:8501**
 | RMSE   | ~ $18,300       |
 
 > A negative/near-zero R² means a plain Linear Regression barely beats predicting the mean salary for everyone. If accuracy matters, consider a tree-based model (Random Forest / Gradient Boosting) and/or additional features.
+
+---
+
+## Future Improvements
+
+- Try Random Forest / Gradient Boosting and compare against Linear Regression
+- Add cross-validation and hyperparameter tuning
+- Add more features (e.g. job role, education, skills) if available
+- Deploy the backend and frontend (Render / Streamlit Community Cloud)
 
 ---
 
